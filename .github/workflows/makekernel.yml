@@ -1,14 +1,14 @@
-name: Make build world
+name: Make build kernel
 
 on:
   push:
     branches:
-      - buildworld
+      - buildkernel
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: A job to make build world in FreeBSD
+    name: A job to make build kernel in FreeBSD
     env:
       MYTOKEN: ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
@@ -36,19 +36,21 @@ jobs:
             git pull
             ls -alh
 
-            LOG_NAME="buildworld-$(date '+%Y%m%d%H%M%S').log"
+            LOG_NAME="buildkernel$(date '+%Y%m%d%H%M%S').log"
 
             # Add hardware information
             echo "===== Hardware Information =====" >> "$LOG_NAME"
-            dmesg >> "$LOG_NAME"
             sysctl hw.model >> "$LOG_NAME"
-            free -h >> "$LOG_NAME"
+            grep memory /var/run/dmesg.boot >> "$LOG_NAME"
+            echo "===== Dmesg =====" >> "$LOG_NAME"
+            dmesg >> "$LOG_NAME"
 
-            # Continue with the existing build command
+            echo "===== Make Output =====" >> "$LOG_NAME"
             git clone https://github.com/freebsd/freebsd-src.git /usr/src
             git config --global --add safe.directory /usr/src
+            git config --global --add safe.directory /home/runner/work/test_action/test_action
             git pull -C /usr/src
-            make -C /usr/src buildworld >> "$LOG_NAME"
+            make -C /usr/src buildkernel >> "$LOG_NAME"
 
             git add .
             git commit -m "Auto-generated build files"
