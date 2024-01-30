@@ -24,10 +24,12 @@ jobs:
           sync: rsync
           copyback: false
           prepare: |
+            pkg -v
+            pkg install -y git
+
             git config user.email "action@github.com"
             git config user.name "GitHub Action"
             git clone https://github.com/freebsd/freebsd-src.git /usr/src/
-
             git config --global --add safe.directory /usr/src/
             cd /usr/src/
             ls -alh
