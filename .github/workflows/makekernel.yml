@@ -1,4 +1,4 @@
-name: Test
+name: Make build kernel
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: A job to run test in FreeBSD
+    name: A job to make build kernel in FreeBSD
     env:
       MYTOKEN: ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
@@ -34,6 +34,13 @@ jobs:
             cd /usr/src/
             ls -alh
           run: |
+            ls -alh
+
+            cd /usr/src/
+            git pull -C /usr/src/
+            
+            ls -alh
+            
             # Add hardware information
             echo "===== Hardware Information =====" >> ~/output.log
             dmesg >> ~/output.log
