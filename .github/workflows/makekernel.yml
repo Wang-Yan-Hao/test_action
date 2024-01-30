@@ -28,13 +28,13 @@ jobs:
             pkg install -y git
             git config user.email "action@github.com"
             git config user.name "GitHub Action"
-            git clone https://github.com/freebsd/freebsd-src.git /usr/src
-            git config --global --add safe.directory /usr/src
-            git pull -C /usr/src
           run: |
+            echo "Running:"
+            ls -alh
             cd work/test_action/test_action
             git checkout log
             git pull
+            ls -alh
 
             LOG_NAME="buildworld-$(date '+%Y%m%d%H%M%S').log"
 
@@ -45,6 +45,9 @@ jobs:
             free -h >> "$LOG_NAME"
 
             # Continue with the existing build command
+            git clone https://github.com/freebsd/freebsd-src.git /usr/src
+            git config --global --add safe.directory /usr/src
+            git pull -C /usr/src
             make -C /usr/src buildworld >> "$LOG_NAME"
 
             git add .
