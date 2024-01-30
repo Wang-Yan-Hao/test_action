@@ -1,14 +1,14 @@
-name: Make build kernel
+name: Make build world
 
 on:
   push:
     branches:
-      - main
+      - buildworld
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: A job to make build kernel in FreeBSD
+    name: A job to make build world in FreeBSD
     env:
       MYTOKEN: ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
@@ -26,30 +26,27 @@ jobs:
           prepare: |
             pkg -v
             pkg install -y git
-
             git config user.email "action@github.com"
             git config user.name "GitHub Action"
-            git clone https://github.com/freebsd/freebsd-src.git /usr/src/
-            git config --global --add safe.directory /usr/src/
-            cd /usr/src/
-            ls -alh
+            git clone https://github.com/freebsd/freebsd-src.git /usr/src
+            git config --global --add safe.directory /usr/src
+            git pull -C /usr/src
           run: |
-            ls -alh
+            cd work/test_action/test_action
+            git checkout log
+            git pull
 
-            cd /usr/src/
-            git pull -C /usr/src/
-            
-            ls -alh
-            
+            LOG_NAME="buildworld-$(date '+%Y%m%d%H%M%S').log"
+
             # Add hardware information
-            echo "===== Hardware Information =====" >> ~/output.log
-            dmesg >> ~/output.log
+            echo "===== Hardware Information =====" >> "$LOG_NAME"
+            dmesg >> "$LOG_NAME"
+            sysctl hw.model >> "$LOG_NAME"
+            free -h >> "$LOG_NAME"
 
             # Continue with the existing build command
-            make buildkernel >> ~/output.log
+            make -C /usr/src buildworld >> "$LOG_NAME"
 
-      - name: Upload output.log as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: output-log
-          path: ~/output.log
+            git add .
+            git commit -m "Auto-generated build files"
+            git push
