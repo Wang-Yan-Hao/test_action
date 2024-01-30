@@ -1,0 +1,46 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: A job to run test in FreeBSD
+    env:
+      MYTOKEN: ${{ secrets.MYTOKEN }}
+      MYTOKEN2: "value2"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test in FreeBSD
+        id: test
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: "14.0"
+          envs: "MYTOKEN MYTOKEN2"
+          usesh: true
+          sync: rsync
+          copyback: false
+          prepare: |
+            git config user.email "action@github.com"
+            git config user.name "GitHub Action"
+            git clone https://github.com/freebsd/freebsd-src.git /usr/src/
+
+            git config --global --add safe.directory /usr/src/
+            cd /usr/src/
+            ls -alh
+          run: |
+            # Add hardware information
+            echo "===== Hardware Information =====" >> ~/output.log
+            dmesg >> ~/output.log
+
+            # Continue with the existing build command
+            make buildkernel >> ~/output.log
+
+      - name: Upload output.log as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: output-log
+          path: ~/output.log
